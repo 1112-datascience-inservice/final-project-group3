@@ -1,0 +1,5 @@
+"","set","train_Accuracy","test_Accuracy","valid_Accuracy","train_Precision","test_Precision","valid_Precision","train_Sensitivity","test_Sensitivity","valid_Sensitivity","train_Specificity","test_Specificity","valid_Specificity","train_F1","test_F1","valid_F1","train_auc","test_auc","valid_auc"
+"1","fold1","0.82","0.90","0.90","0.63","0.40","0.40","0.25","0.25","0.24","0.96","0.96","0.96","0.36","0.31","0.30","0.60721","0.60576","0.60336"
+"2","fold2","0.82","0.89","0.89","0.61","0.37","0.37","0.29","0.29","0.29","0.95","0.95","0.95","0.40","0.33","0.32","0.62367","0.62095","0.61994"
+"3","fold3","0.82","0.90","0.90","0.64","0.39","0.38","0.27","0.27","0.25","0.96","0.96","0.96","0.38","0.32","0.31","0.61751","0.61300","0.60708"
+"4","best","fold1","fold1","fold1","fold3","fold1","fold1","fold2","fold2","fold2","fold1","fold1","fold1","fold2","fold2","fold2","fold2","fold2","fold2"
