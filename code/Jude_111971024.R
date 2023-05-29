@@ -86,17 +86,16 @@ balance_data <- function (df) {
 
 
 # Initialize parameters
-fold <- NA
+fold <- 3
 input_file <- NA
-output_file <- NA
+# output_file <- NA
 i <- 1
 start_time <- Sys.time()
 
 # Read & parse parameters
 args = commandArgs(trailingOnly=TRUE)
 if (length(args)==0) {
-    stop("USAGE: Rscript hw3_111971024.R --fold k --input heart_2020_cleaned.csv filen 
-         --output performance.csv", call.=FALSE)
+    stop("USAGE: Rscript Jude_111971024.R --input heart_2020_cleaned.csv", call.=FALSE)
 }
 while (i < length(args)) {
     if (args[i] == "--fold") {
@@ -107,10 +106,10 @@ while (i < length(args)) {
         input_file <- args[i+1]
         i <- i+1
     } 
-    else if (args[i] == "--output") {
-        output_file <- args[i+1]
-        i <- i+1
-    } 
+    # else if (args[i] == "--output") {
+    #     output_file <- args[i+1]
+    #     i <- i+1
+    # } 
     else {
         stop(paste("Unknown flag", args[i]), call.=FALSE)
     }
@@ -124,9 +123,9 @@ if (is.na(fold)) {
 if (any(is.na(input_file))) {
     stop("missing input file", call.=FALSE)
 }
-if (any(is.na(output_file))) {
-    stop("missing output file", call.=FALSE)
-}
+# if (any(is.na(output_file))) {
+#     stop("missing output file", call.=FALSE)
+# }
 if (!file.exists(input_file)) {
     stop(paste("Input path does't exist: ", input_file), call.=FALSE)
 }
