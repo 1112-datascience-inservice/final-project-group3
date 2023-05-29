@@ -42,4 +42,5 @@ vignettes/*.pdf
 /results/111971013/initial_stage/*
 /results/111971013/*.txt
 /results/111971013/*.sql
-
+!/results/111971013/rpart_2023-05-29_16-04-59
+/results/111971013/*
