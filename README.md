@@ -1,3 +1,13 @@
+## Quick start
+You might provide an example commend or few commends to reproduce your analysis, i.e., the following R script
+```R
+Rscript code/xgboost_111971005.R --input data/heart_2020_cleaned.csv
+run smote with raw data "heart_2020_cleaned.csv"
+
+Rscript code/xgboost_111971005.R --input data/heart_2020_smote.csv
+use already smote data "heart_2020_smote.csv"
+```
+
 # [GroupID] your projrct title
 The goals of this project.
 

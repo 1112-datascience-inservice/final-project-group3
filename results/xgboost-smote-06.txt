@@ -1,0 +1,57 @@
+##### xgb.Booster
+raw: 381.9 Kb 
+call:
+  xgb.train(params = params, data = train_matrix_smote, nrounds = 100)
+params (as set within xgb.train):
+  objective = "binary:logistic", eval_metric = "error", max_depth = "6", eta = "0.3", nthread = "4", validate_parameters = "TRUE"
+xgb.attributes:
+  niter
+callbacks:
+  cb.print.evaluation(period = print_every_n)
+# of features: 29 
+niter: 100
+nfeatures : 29 
+[1] "------------------"
+Confusion Matrix and Statistics
+
+          Reference
+Prediction     0     1
+         0   869   641
+         1 26577  2085
+                                          
+               Accuracy : 0.0979          
+                 95% CI : (0.0946, 0.1013)
+    No Information Rate : 0.9097          
+    P-Value [Acc > NIR] : 1               
+                                          
+                  Kappa : -0.0385         
+                                          
+ Mcnemar's Test P-Value : <2e-16          
+                                          
+            Sensitivity : 0.76486         
+            Specificity : 0.03166         
+         Pos Pred Value : 0.07274         
+         Neg Pred Value : 0.57550         
+             Prevalence : 0.09035         
+         Detection Rate : 0.06910         
+   Detection Prevalence : 0.94995         
+      Balanced Accuracy : 0.39826         
+                                          
+       'Positive' Class : 1               
+                                          
+$overall
+      Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+    0.09790534    -0.03850405     0.09457427     0.10131405     0.90965133 
+AccuracyPValue  McnemarPValue 
+    1.00000000     0.00000000 
+
+$byClass
+         Sensitivity          Specificity       Pos Pred Value 
+          0.76485693           0.03166217           0.07274440 
+      Neg Pred Value            Precision               Recall 
+          0.57549669           0.07274440           0.76485693 
+                  F1           Prevalence       Detection Rate 
+          0.13285332           0.09034867           0.06910380 
+Detection Prevalence    Balanced Accuracy 
+          0.94995360           0.39825955 
+
