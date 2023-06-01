@@ -169,6 +169,16 @@ pred_no_smote.val<-predict(bst_no_smote,dvalidation)
 pred_no_smote.test<-predict(bst_no_smote,dtest)
 pr_no_smote_test <- prediction(pred_no_smote.test, test_set$HeartDisease)
 pr_no_smote_val <- prediction(pred_no_smote.val, validation_set$HeartDisease)
+xgboost_roc_test_ns <- roc(test_set$HeartDisease,as.numeric(pred_no_smote.test))
+plot(xgboost_roc_test_ns, print.auc=TRUE, auc.polygon=TRUE, 
+     grid=c(0.1, 0.2),grid.col=c("green", "red"), 
+     max.auc.polygon=TRUE,auc.polygon.col="skyblue", 
+     print.thres=TRUE,main='ROC curve Test without Smote')
+xgboost_roc_val_ns <- roc(validation_set$HeartDisease,as.numeric(pred_no_smote.val))
+plot(xgboost_roc_val_ns, print.auc=TRUE, auc.polygon=TRUE, 
+     grid=c(0.1, 0.2),grid.col=c("green", "red"), 
+     max.auc.polygon=TRUE,auc.polygon.col="skyblue", 
+     print.thres=TRUE,main='ROC curve Validation without Smote')
 threshold <- 0.5
 predicted_test_labels_no_smote <- ifelse(pred_no_smote.test >= threshold, 1, 0)
 predicted_val_labels_no_smote <- ifelse(pred_no_smote.val >= threshold, 1, 0)
