@@ -26,7 +26,7 @@ f_in_csv <- data.frame(f_in_csv)
 # head(f_in_csv)
 # summary(f_in_csv)
 
-# # check data coolumn
+# # check dataㄌ coolumn
 # names(f_in_csv) 
 
 
@@ -134,7 +134,7 @@ message("testing set:")
 dim(testing)
 message("validation set:")
 dim(validation)
-
+input='data/heart_2020_smote.csv'
 # use smote to select sample
 # SMOTE代表合成少数类过采样技术（Synthetic Minority Oversampling Technique）
 # set the dataset into train, test, valid and use smote on training data.
@@ -194,6 +194,13 @@ get_rpart_roc <- function(model, testing, model_name, with_smote){
   plot(roc_obj, main = "ROC Curve")
   legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")
   dev.off()
+  
+  # pred <- prediction(scores, labels)
+  # perf <- performance(pred, "tpr", "fpr")
+  # auc  <- performance(pred, 'auc')
+  # auc  <- unlist(slot(auc,"y.values"))
+  # plot(perf, main = "ROC Curve")
+  # legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")
 }
 
 # Run algorithms using 5-fold cross validation
@@ -228,7 +235,6 @@ model_select_message <- sprintf("Training model is: %s", "xgboost")
 print(model_select_message)
 
 # 加載訓練數據和測試數據，並準備特徵矩陣和標籤
-head(training)
 train_features_unsmote <- as.matrix(training[, -1])
 train_labels_unsmote <- as.matrix(factor(training[, 1]))
 train_labels_unsmote <- ifelse(train_labels_unsmote=="No", 0,1)
@@ -250,7 +256,6 @@ params <- list(
 
 model_xgboost_unsmote <- xgb.train(params = params, data = train_matrix_unsmote, nrounds = 100)
 predicted_xgboost_unsmote <- predict(model_xgboost_unsmote, test_matrix)
-head(predicted_xgboost_unsmote)
 binary_predictions_xg_unsmote <- ifelse(predicted_xgboost_unsmote > 0.5, 1, 0)
 sink(paste('results/xgboost-unsmote.txt'))
 print('------------------Model Information----------------------')
@@ -295,7 +300,6 @@ params <- list(
 
 model_xgboost_smote <- xgb.train(params = params, data = train_matrix_smote, nrounds = 100)
 predicted_xgboost_smote <- predict(model_xgboost_smote, test_matrix)
-head(predicted_xgboost_smote)
 binary_predictions_xg_smote <- ifelse(predicted_xgboost_smote > 0.5, 1, 0)
 sink(paste('results/xgboost-smote.txt'))
 print(model_xgboost_smote)
@@ -313,7 +317,6 @@ png("results/xgboost-smote.png", width = 600, height = 600)
 plot(roc_obj_xgboost_smote, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
 text(0.5, 0.5, paste("AUC =", round(auc_xg_smote, 2)), adj = c(0.5, 0.5))
 dev.off()
-
 # 繪製importance matrix
 importance_matrix_smote <- xgb.importance(model = model_xgboost_smote)
 print(importance_matrix_smote)
@@ -356,7 +359,6 @@ params <- list(
 
 model_xgboost_smote_hinge <- xgb.train(params = params, data = train_matrix_smote, nrounds = 100)
 predicted_smote_hinge <- predict(model_xgboost_smote_hinge, test_matrix)
-head(predicted_smote_hinge)
 sink(paste('results/xgboost-binary-hinge-smote.txt'))
 print(model_xgboost_smote_hinge)
 print('------------------')
@@ -382,7 +384,7 @@ print(cf)
 print(cf[3]) #overall col
 print(cf[4]) #byclass col
 sink()
-roc_obj_xgboost_smote_04 <- roc(factor(test_labels), binary_predictions_xg_smote_04)
+roc_obj_xgboost_smote_04 <- roc(factor(test_labels), redicted_xgboost_smote)
 auc_xg_smote_04 <- auc(roc_obj_xgboost_smote_04)
 plot(roc_obj_xgboost_smote_04, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
 text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_04, 2)), adj = c(0.5, 0.5))
@@ -401,7 +403,7 @@ print(cf)
 print(cf[3]) #overall col
 print(cf[4]) #byclass col
 sink()
-roc_obj_xgboost_smote_06 <- roc(factor(test_labels), binary_predictions_xg_smote_06)
+roc_obj_xgboost_smote_06 <- roc(factor(test_labels), predicted_xgboost_smote)
 auc_xg_smote_06 <- auc(roc_obj_xgboost_smote_06)
 plot(roc_obj_xgboost_smote_06, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
 text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_06, 2)), adj = c(0.5, 0.5))
@@ -409,3 +411,14 @@ png("results/xgboost-smote06.png", width = 600, height = 600)
 plot(roc_obj_xgboost_smote_06, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
 text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_06, 2)), adj = c(0.5, 0.5))
 dev.off()
+
+
+
+# predicted <- predict(model_rpart_unsmote, newdata = testing, type="prob")
+# labels <- ifelse(testing$HeartDisease == "Yes", 1, 0)
+# pred <- prediction(predicted$Yes, labels)
+# perf <- performance(pred, "prec", "rec")
+# auc  <- performance(pred, 'auc')
+# auc  <- unlist(slot(auc,"y.values"))
+# plot(perf, main = "ROC Curve")
+# legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")

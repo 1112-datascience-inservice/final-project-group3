@@ -2,6 +2,14 @@
 #  Rscript.exe code/xgboost_111971005.R --input data/heart_2020_cleaned.csv 
 # use already smote data and save your time
 #  Rscript.exe code/xgboost_111971005.R --input data/heart_2020_smote.csv 
+
+# --------------installed packages-----------------------
+# install.packages('rpart.plot')
+# install.packages('ggplot2')
+# install.packages('png')
+# install.packages('xgboost')
+# install.packages('lightgbm')
+# -------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
 for (i in args){
   if (i == "--input") {
@@ -12,30 +20,6 @@ for (i in args){
 f_in_csv <- read.csv("data/heart_2020_cleaned.csv")
 f_in_csv <- data.frame(f_in_csv)
 
-# check rows 319795 rows & 18 cols
-# message(nrow(f_in_csv))
-# message(ncol(f_in_csv))
-# head(f_in_csv)
-# summary(f_in_csv)
-
-# # check data coolumn
-# names(f_in_csv) 
-
-
-# check columns category
-# for(i in colnames(f_in_csv))
-# {
-#     if(i %in% c("BMI", "PhysicalHealth", "MentalHealth", "SleepTime")){next}
-#     category <- unique(f_in_csv[[i]])
-    
-#     print(paste("col_name：", i))
-#     print(category)
-
-# }
-
-# check for NA
-sum(is.na(f_in_csv))
-# No NA values
 for(i in colnames(f_in_csv))
 {
     na_nums <- 0
@@ -132,6 +116,7 @@ dim(validation)
 # SMOTE代表合成少数类过采样技术（Synthetic Minority Oversampling Technique）
 # set the dataset into train, test, valid and use smote on training data.
 # install.packages("performanceEstimation")
+input = "data/heart_2020_smote.csv"
 library('performanceEstimation')
 if(input == "data/heart_2020_cleaned.csv"){
   training_smote <- smote(HeartDisease ~ ., data = training)
@@ -149,46 +134,6 @@ table(training_smote[1])
 # select non na value
 training_smote_NonNA <- na.omit(training_smote)
 
-# 使用套件取得相關數值
-get_model_cfmatrix <- function(model, testing, with_smote){
-    predicted <- predict(model, newdata=testing)
-    result_frame <- data.frame(predicted=predicted, result=testing$HeartDisease)
-    result_frame$pred_acc <- result_frame$predicted == result_frame$result
-    result_frame_count <- table(result_frame$pred_acc)
-    sink(paste('results/', model[1], '-', with_smote, '.txt'))
-    print('---------------Model Information--------------')
-    print(model)
-   
-    print("---------------Predicted Result Counts:------------------")
-    print(result_frame_count)
-    print("----------------Testing Data Acc:------------------------")
-    print(result_frame_count[2] / nrow(result_frame))
-    # knn.k1 <- model$bestTune # keep this Initial k for testing with knn() function in next section
-    cf <- confusionMatrix(factor(predicted), factor(testing$HeartDisease), positive='Yes')
-    print("----------------Confusion Matrix:------------------------")
-    print(cf)
-    print(cf[3]) #overall col
-    print(cf[4]) #byclass col
-    sink()
-}
-
-library(pROC)
-library(png)
-# ROC Curve function
-get_rpart_roc <- function(model, testing, model_name, with_smote){
-  predicted <- predict(model, newdata = testing, type = "prob")
-  scores <- predicted[, "Yes"]
-  labels <- ifelse(testing$HeartDisease == "Yes", 1, 0)
-  roc_obj <- roc(labels, scores)
-  auc <- auc(roc_obj)
-  plot(roc_obj, main = "ROC Curve")
-  legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")
-  png(paste("results/", model_name, '-', with_smote, '.png', sep = ''), width = 600, height = 600)
-  plot(roc_obj, main = "ROC Curve")
-  legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")
-  dev.off()
-}
-
 # Run algorithms using 5-fold cross validation
 trctrl <- trainControl(method = "repeatedcv", number = 5, repeats = 3)
 set.seed(3333)
@@ -201,53 +146,6 @@ message("************************")
 model_select_message <- sprintf("Training model is: %s", "xgboost")
 print(model_select_message)
 
-# 加載訓練數據和測試數據，並準備特徵矩陣和標籤
-train_features_unsmote <- as.matrix(training[, -1])
-train_labels_unsmote <- as.matrix(factor(training[, 1]))
-train_labels_unsmote <- ifelse(train_labels_unsmote=="No", 0,1)
-test_features <- as.matrix(testing[, -1])
-test_labels <- as.matrix(testing[, 1])
-test_labels <- ifelse(test_labels=='No', 0,1)
-
-# 將數據轉換為DMatrix格式
-train_matrix_unsmote <- xgb.DMatrix(data = train_features_unsmote, label = train_labels_unsmote)
-test_matrix <- xgb.DMatrix(data = test_features)
-
-params <- list(
-  "objective" = "binary:logistic",
-  "eval_metric" = "error",
-  "max_depth" = 6,
-  "eta" = 0.3,
-  "nthread" = 4
-)
-
-model_xgboost_unsmote <- xgb.train(params = params, data = train_matrix_unsmote, nrounds = 100)
-predicted_xgboost_unsmote <- predict(model_xgboost_unsmote, test_matrix)
-head(predicted_xgboost_unsmote)
-summary(predicted_xgboost_unsmote)
-binary_predictions_xg_unsmote <- ifelse(predicted_xgboost_unsmote > 0.5, 1, 0)
-table(binary_predictions_xg_unsmote)
-sink(paste('results/xgboost-unsmote.txt'))
-print('------------------Model Information----------------------')
-print(model_xgboost_unsmote)
-print('------------------Confusion Matrix----------------------')
-cf <- confusionMatrix(factor(binary_predictions_xg_unsmote), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
-sink()
-roc_obj_xgboost_unsmote <- roc(factor(test_labels), predicted_xgboost_unsmote)
-print("roc ok")
-auc_xg_unsmote <- auc(roc_obj_xgboost_unsmote)
-plot(roc_obj_xgboost_unsmote, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_unsmote, 2)), adj = c(0.5, 0.5))
-png("results/xgboost-unsmote.png", width = 600, height = 600)
-plot(roc_obj_xgboost_unsmote, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_unsmote, 2)), adj = c(0.5, 0.5))
-dev.off()
-
-
-
 # xgboost with smote
 # 加載訓練數據和測試數據，並準備特徵矩陣和標籤
 train_features_smote <- as.matrix(training_smote_NonNA[, -1])
@@ -256,9 +154,13 @@ train_labels_smote <- ifelse(train_labels_smote=='No', 0,1)
 test_features <- as.matrix(testing[, -1])
 test_labels <- as.matrix(testing[, 1])
 test_labels <- ifelse(test_labels=='No', 0,1)
+val_features <- as.matrix(validation[, -1])
+val_labels <- as.matrix(validation[, 1])
+val_labels <- ifelse(val_labels=='No', 0,1)
 # 將數據轉換為DMatrix格式
 train_matrix_smote <- xgb.DMatrix(data = train_features_smote, label = train_labels_smote)
 test_matrix <- xgb.DMatrix(data = test_features)
+val_matrix <- xgb.DMatrix(data = val_features)
 
 params <- list(
   "objective" = "binary:logistic",
@@ -268,162 +170,131 @@ params <- list(
   "nthread" = 4
 )
 
+library(xgboost)
 model_xgboost_smote <- xgb.train(params = params, data = train_matrix_smote, nrounds = 100)
+# predict test data
 predicted_xgboost_smote <- predict(model_xgboost_smote, test_matrix)
-head(predicted_xgboost_smote)
-binary_predictions_xg_smote <- ifelse(predicted_xgboost_smote > 0.5, 1, 0)
+
+get_threshold_cf <- function(predicted, labels, txt_name){
+  sequence <- seq(from = 0, to = 0.95, by = 0.05)
+  threshold_ls <- c()
+  sensitivity_ls <- c()
+  specificity_ls <- c()
+  F1score_ls <- c()
+  max_f1 = 0
+  max_f1_threshold = 0
+  for( i in sequence){
+    temp_pred <- ifelse(predicted >= i, 1, 0)
+    cf <- confusionMatrix(factor(temp_pred), factor(labels), positive='1')
+    if(max_f1 < cf[[4]][7]){
+      max_f1 = cf[[4]][7]
+      max_f1_threshold = i
+    }
+    sensitivity_ls <- c(sensitivity_ls, cf[[4]][1])
+    specificity_ls <- c(specificity_ls, cf[[4]][2])
+    F1score_ls <- c(F1score_ls, cf[[4]][7])
+    threshold_ls <- c(threshold_ls, i)
+  }
+  result_frame <- data.frame(threshold=threshold_ls, sensitivity=sensitivity_ls, specificity=specificity_ls, F1=F1score_ls)
+  sink(paste('results/', txt_name))
+  print(result_frame)
+  print(sprintf("Max F1 %s at threshold %s", max_f1, max_f1_threshold))
+  print(sprintf("Null model accuracy: %s", cf[[3]][5]))
+  sink()
+  return(max_f1_threshold)
+}
+
+max_f1_threshold <- get_threshold_cf(predicted_xgboost_smote, test_labels, txt_name='xgboost-smote-treshold-cf')
+binary_predictions_xg_smote <- ifelse(predicted_xgboost_smote > max_f1_threshold, 1, 0)
 table(binary_predictions_xg_smote)
-sink(paste('results/xgboost-smote.txt'))
-print(model_xgboost_smote)
-print('------------------')
+sink(paste('results/xgboost-train', max_f1_threshold, '.txt'))
 cf <- confusionMatrix(factor(binary_predictions_xg_smote), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
+print(cf$table)
+print('------------------')
+print(cf$overall) #overall col
+print('------------------')
+print(cf$byClass) #byclass col
 sink()
-roc_obj_xgboost_smote <- roc(factor(test_labels), predicted_xgboost_smote)
-auc_xg_smote <- auc(roc_obj_xgboost_smote)
-plot(roc_obj_xgboost_smote, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote, 2)), adj = c(0.5, 0.5))
-png("results/xgboost-smote.png", width = 600, height = 600)
-plot(roc_obj_xgboost_smote, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote, 2)), adj = c(0.5, 0.5))
+
+library(pROC)
+library(png)
+test_roc = roc(factor(test_labels) ~ predicted_xgboost_smote, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
+png("results/xgboost-smote-roc.png", width = 600, height = 600)
+test_roc = roc(factor(test_labels) ~ predicted_xgboost_smote, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
 dev.off()
 
-# # 繪製importance matrix
-# importance_matrix_smote <- xgb.importance(model = model_xgboost_smote)
-# print(importance_matrix_smote)
-# # install.packages("Ckmeans.1d.dp")
-# library(Ckmeans.1d.dp)
-# xgb.ggplot.importance(importance_matrix = importance_matrix_smote)
-# png("results/xgboost-smote-importance-matrix.png", width = 600, height = 600)
-# xgb.ggplot.importance(importance_matrix = importance_matrix_smote)
-# dev.off()
+# predict val data
+predicted_xgboost_smote_val <- predict(model_xgboost_smote, val_matrix)
+val_roc = roc(factor(val_labels) ~ predicted_xgboost_smote_val, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
+png("results/xgboost-smote-roc-val.png", width = 600, height = 600)
+val_roc = roc(factor(val_labels) ~ predicted_xgboost_smote_val, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
+dev.off()
 
-# # install.packages("DiagrammeR")
-# library(DiagrammeR)
-# library(rpart.plot)
-# xgb.plot.tree(model = model_xgboost_smote, trees = 1, plot_width = 500,plot_height = 500)
-# tree_first <- xgb.plot.tree(model = model_xgboost_smote, trees = 1, plot_width = 500,plot_height = 500)
-# tree_first
-# # export_graph(tree_first, file_name = "decision_tree.png", width = 800, height = 600)
+max_f1_threshold_val <- get_threshold_cf(predicted_xgboost_smote_val, val_labels, txt_name='xgboost-smote-val-treshold-cf')
+binary_predictions_xg_smote_val <- ifelse(predicted_xgboost_smote_val > max_f1_threshold_val, 1, 0)
+cf <- confusionMatrix(factor(binary_predictions_xg_smote_val), factor(val_labels), positive='1')
+sink(paste('results/xgboost-val', max_f1_threshold_val, '.txt'))
+print(cf$table)
+print('------------------')
+print(cf$overall) #overall col
+print('------------------')
+print(cf$byClass) #byclass col
+sink()
+
+# 繪製importance matrix
+importance_matrix_smote <- xgb.importance(model = model_xgboost_smote)
+print(importance_matrix_smote)
+print(importance_matrix_smote$Split)
+# install.packages("Ckmeans.1d.dp")
+library(Ckmeans.1d.dp)
+xgb.ggplot.importance(importance_matrix = importance_matrix_smote)
+png("results/xgboost-smote-importance-matrix.png", width = 600, height = 600)
+xgb.ggplot.importance(importance_matrix = importance_matrix_smote)
+dev.off()
 
 
+# select 13 features
+# "BMI+Smoking+Stroke+DiffWalking+Sex+AgeCategory+Asthma+KidneyDisease+Race_Hispanic+GenHealth_Excellent+GenHealth_Fair+GenHealth_Good+GenHealth_Poor"
+features_selected <- c("BMI","Smoking","Stroke","DiffWalking","Sex","AgeCategory","Asthma","KidneyDisease","Race_Hispanic","GenHealth_Excellent","GenHealth_Fair","GenHealth_Good","GenHealth_Poor")
+# features_selected <- c(1, 2, 4, 7, 8, 9, )
+train_features_selected <- training_smote_NonNA[, features_selected]
+test_features_selected <- testing[, features_selected]
+val_features_selected <- validation[, features_selected]
 
-# xgboost with smote and parameters objective use hinge
-# 加載訓練數據和測試數據，並準備特徵矩陣和標籤
-train_features_smote <- as.matrix(training_smote_NonNA[, -1])
-train_labels_smote <- as.matrix(factor(training_smote_NonNA[, 1]))
-train_labels_smote <- ifelse(train_labels_smote=='No', 0,1)
-test_features <- as.matrix(testing[, -1])
+train_features <- as.matrix(train_features_selected)
+train_labels <- as.matrix(factor(training_smote_NonNA[, 1]))
+train_labels <- ifelse(train_labels=='No', 0,1)
+test_features <- as.matrix(test_features_selected)
 test_labels <- as.matrix(testing[, 1])
 test_labels <- ifelse(test_labels=='No', 0,1)
-# 將數據轉換為DMatrix格式
-train_matrix_smote <- xgb.DMatrix(data = train_features_smote, label = train_labels_smote)
-test_matrix <- xgb.DMatrix(data = test_features)
+val_features <- as.matrix(val_features_selected)
+val_labels <- as.matrix(validation[, 1])
+val_labels <- ifelse(val_labels=='No', 0,1)
+train_matrix_selected <- xgb.DMatrix(data = train_features, label = train_labels)
+test_matrix_selected <- xgb.DMatrix(data = test_features)
+val_matrix_selected <- xgb.DMatrix(data = val_features)
 
-params <- list(
-  "objective" = "binary:hinge",
-  "eval_metric" = "error",
-  "max_depth" = 6,
-  "eta" = 0.3,
-  "nthread" = 4
-)
-
-model_xgboost_smote_hinge <- xgb.train(params = params, data = train_matrix_smote, nrounds = 100)
-predicted_smote_hinge <- predict(model_xgboost_smote_hinge, test_matrix)
-head(predicted_smote_hinge)
-sink(paste('results/xgboost-binary-hinge-smote.txt'))
-print(model_xgboost_smote_hinge)
-print('------------------')
-cf <- confusionMatrix(factor(predicted_smote_hinge), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
-sink()
-# roc_obj_hinge <- roc(factor(test_labels), predicted_smote)
-# auc <- auc(roc_obj)
-# plot(roc_obj, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-# text(0.5, 0.5, paste("AUC =", round(auc, 2)), adj = c(0.5, 0.5))
-# jpeg("results/xgboost-binary-hinge-smote.jpg", width = 600, height = 600)
-# dev.off()
-
-# test xgboost threshold 0.4 0.5 0.6
-binary_predictions_xg_smote_04 <- ifelse(predicted_xgboost_smote > 0.4, 1, 0)
-sink(paste('results/xgboost-smote-04.txt'))
-print(model_xgboost_smote)
-print('------------------')
-cf <- confusionMatrix(factor(binary_predictions_xg_smote_04), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
-sink()
-roc_obj_xgboost_smote_04 <- roc(factor(test_labels), binary_predictions_xg_smote_04)
-auc_xg_smote_04 <- auc(roc_obj_xgboost_smote_04)
-plot(roc_obj_xgboost_smote_04, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_04, 2)), adj = c(0.5, 0.5))
-png("results/xgboost-smote04.png", width = 600, height = 600)
-plot(roc_obj_xgboost_smote_04, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_04, 2)), adj = c(0.5, 0.5))
+model_xgboost_selected <- xgb.train(params = params, data = train_matrix_selected, nrounds = 100)
+# predict test data
+predicted_features_selected <- predict(model_xgboost_selected, test_features)
+selected_roc = roc(factor(test_labels) ~ predicted_features_selected, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
+png("results/xgboost-features_selected.png", width = 600, height = 600)
+selected_roc = roc(factor(test_labels) ~ predicted_features_selected, plot = TRUE,
+               print.auc = TRUE,legacy.axes=TRUE) 
 dev.off()
 
-# test xgboost threshold 0.4 0.5 0.6
-binary_predictions_xg_smote_03 <- ifelse(predicted_xgboost_smote > 0.6, 1, 0)
-sink(paste('results/xgboost-smote-06.txt'))
-print(model_xgboost_smote)
+max_fa_threshold_selected <- get_threshold_cf(predicted_features_selected, test_labels, txt_name='xgboost-selected-treshold-cf')
+binary_predictions_selected <- ifelse(predicted_features_selected > max_fa_threshold_selected, 1, 0)
+sink(paste('results/xgboost-selected', max_fa_threshold_selected, '.txt'))
+cf <- confusionMatrix(factor(binary_predictions_selected), factor(test_labels), positive='1')
+print(cf$table)
 print('------------------')
-cf <- confusionMatrix(factor(binary_predictions_xg_smote_03), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
+print(cf$overall) #overall col
+print('------------------')
+print(cf$byClass) #byclass col
 sink()
-roc_obj_xgboost_smote_03 <- roc(factor(test_labels), binary_predictions_xg_smote_03)
-auc_xg_smote_03 <- auc(roc_obj_xgboost_smote_03)
-plot(roc_obj_xgboost_smote_03, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_03, 2)), adj = c(0.5, 0.5))
-png("results/xgboost-smote06.png", width = 600, height = 600)
-plot(roc_obj_xgboost_smote_03, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_03, 2)), adj = c(0.5, 0.5))
-dev.off()
-
-binary_predictions_xg_smote_03 <- ifelse(predicted_xgboost_smote > 0.3, 1, 0)
-sink(paste('results/xgboost-smote-03.txt'))
-print(model_xgboost_smote)
-print('------------------')
-cf <- confusionMatrix(factor(binary_predictions_xg_smote_03), factor(test_labels), positive='1')
-print(cf)
-print(cf[3]) #overall col
-print(cf[4]) #byclass col
-sink()
-roc_obj_xgboost_smote_03 <- roc(factor(test_labels), binary_predictions_xg_smote_03)
-auc_xg_smote_03 <- auc(roc_obj_xgboost_smote_03)
-plot(roc_obj_xgboost_smote_03, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_03, 2)), adj = c(0.5, 0.5))
-png("results/xgboost-smote03.png", width = 600, height = 600)
-plot(roc_obj_xgboost_smote_03, main = "ROC Curve", xlab = "False Positive Rate", ylab = "True Positive Rate")
-text(0.5, 0.5, paste("AUC =", round(auc_xg_smote_03, 2)), adj = c(0.5, 0.5))
-dev.off()
-
-# use lightgbm to train
-library(lightgbm)
-train_features_smote <- as.matrix(training_smote_NonNA[, -1])
-train_labels_smote <- as.matrix(factor(training_smote_NonNA[, 1]))
-train_labels_smote <- ifelse(train_labels_smote=='No', 0,1)
-test_features <- as.matrix(testing[, -1])
-test_labels <- as.matrix(testing[, 1])
-test_labels <- ifelse(test_labels=='No', 0,1)
-train_dataset <- lgb.Dataset(data = as.matrix(train_features_smote), label = train_labels_smote)
-params <- list(
-  objective = "binary",
-  metric = "binary_logloss"
-)
-model <- lgb.train(params = params, data = train_dataset, nrounds = 100)
-predictions <- predict(model, as.matrix(test_features))
-summary(predictions)
-
-binary_predictions <- ifelse(predictions > 0.5, 1, 0)
-print(model_xgboost_smote)
-print('------------------')
-cf <- confusionMatrix(factor(binary_predictions), factor(test_labels), positive='1')
-print(cf)
-

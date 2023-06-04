@@ -1,0 +1,18 @@
+          Reference
+Prediction     0     1
+         0 23672  1168
+         1  3773  1558
+[1] "------------------"
+      Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+  8.362335e-01   3.034636e-01   8.320089e-01   8.403932e-01   9.096483e-01 
+AccuracyPValue  McnemarPValue 
+  1.000000e+00  2.134773e-300 
+[1] "------------------"
+         Sensitivity          Specificity       Pos Pred Value 
+          0.57153338           0.86252505           0.29225286 
+      Neg Pred Value            Precision               Recall 
+          0.95297907           0.29225286           0.57153338 
+                  F1           Prevalence       Detection Rate 
+          0.38674445           0.09035166           0.05163899 
+Detection Prevalence    Balanced Accuracy 
+          0.17669285           0.71702922 
