@@ -26,7 +26,7 @@ Dataset come from Kaggle project [[Personal Key Indicators of Heart Disease]](ht
 ### Goal
 * 要解決什麼問題？我們就可定義期末報告的主題集合。
 
-### data (input)
+### Data (input)
 * a. 資料前處理：有無發現資料清洗的難處？
 
 ### Model
