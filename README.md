@@ -20,8 +20,8 @@ Rscript code/group3.R --input data/heart_2020_cleaned.csv --output results/perfo
 ```
 
 ## Kaggle project data introduction
-![](data/Kaggle image_1.png)
-Dataset come from Kaggle project [Personal Key Indicators of Heart Disease](https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease)
+![](data/Kaggle_image_1.png)
+Dataset come from Kaggle project "["[Personal Key Indicators of Heart Disease]"]"(https://www.kaggle.com/datasets/kamilpytlak/personal-key-indicators-of-heart-disease)
 
 ### Goal
 * 要解決什麼問題？我們就可定義期末報告的主題集合。
