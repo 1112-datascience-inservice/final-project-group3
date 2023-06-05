@@ -56,7 +56,6 @@ transform_data_column <- function (df) {
 
 split_data <- function (df) {
     # Split train & validation
-    set.seed(42)
     train.index <- createDataPartition(df$HeartDisease, p = .7, list = FALSE)
     train_df <- df[train.index,]
     valid_df <- df[-train.index,]
@@ -138,9 +137,10 @@ if (fold < 3) {
 }
 
 df <- read.csv(input_file, header=TRUE)
+set.seed(42)
 # Shuffle samples
 df <- df[sample(1:nrow(df)), ]
-# df <- df[1:100000,]
+# df <- df[1:10000,]
 # df <- df[1:nrow(df) - 100000,]
 df <- transform_data_column(df=df)
 fold_size <- nrow(df) %/% fold
@@ -151,16 +151,24 @@ valid_df <- result[[2]]
 
 message('Before somte: ')
 print(table(train_df$HeartDisease))
-# train_df <- balance_data(df=train_df)
+train_df <- balance_data(df=train_df)
 message('After somte: ')
 print(table(train_df$HeartDisease))
 
-model <- randomForest(HeartDisease ~ ., data=train_df, ntree=100, mtry=3, importance=TRUE)
+model <- randomForest(HeartDisease ~ ., data=train_df, ntree=20, mtry=3, importance=TRUE)
 val_pred <- predict(model, valid_df, type="class")
 # print(val_pred)
 # stop()
 # val_acc <- round(mean(val_pred == valid_df$HeartDisease), 2)
 # message(val_acc)
+
+# Importance
+feature_importance <- importance(model)
+print(feature_importance)
+# varImpPlot(model)
+# selected_features <- names(feature_importance)[feature_importance > threshold]
+# train_selected <- train_df[, c("HeartDisease", selected_features)]
+
 
 confusion_matrix <- table(valid_df$HeartDisease, val_pred)
 accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
