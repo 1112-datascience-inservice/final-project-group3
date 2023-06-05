@@ -9,6 +9,8 @@
 #3. performanceEstimation：smote to tackle unbalanced dataset
 #4. dplyr：tackele dataframe
 #5. ROCR：roc curve and aus
+#6. caret::varImp ：the important order of cols for target y
+#7. car::vif ：check collinearity in cols
 
 
 
@@ -100,7 +102,26 @@ if (any(is.na(f_out))) {
 # =====(2-1)read file in================================
 f_in_csv <- read.csv(f_in, header = T)
 dir.create(f_out, recursive = TRUE, showWarnings = FALSE)
+# =====(2-1-1)chi-square test:original cols and target y================================
+chi_square_data <- c("col_order", "col_name", "X-squared", "df", "p-value")
+for(i in c(2:length(colnames(f_in_csv))))
+{
 
+    chi_obj <- chisq.test(f_in_csv$HeartDisease, f_in_csv[,i], correct=FALSE)
+    
+    if(chi_obj[[3]] < 0.05)
+    {
+        chi_square_data <- rbind(chi_square_data, c(i, colnames(f_in_csv)[[i]], chi_obj[[1]], chi_obj[[2]], as.numeric(chi_obj[[3]])))
+        #print(c(i, chi_obj[[1]], chi_obj[[2]], chi_obj[[3]]))
+        #message(sprintf("%d : %s col has relation with HeartDisease", i, colnames(f_in_csv)[[i]]))
+    }
+        
+}
+
+df <- data.frame(chi_square_data)
+colnames(df) <- df[1,]
+df <- df[-1, ] 
+write.csv(df, sprintf("%s/cor_original_chi-square.csv", f_out), row.names = FALSE)
 # =====(2-2)examine data: data================================
 #print(summary(f_in_csv))
 # =====(2-2-1)unique col if its data isn't numeric================================
@@ -196,11 +217,11 @@ library('performanceEstimation') #instead of library('smotefamily')
 
 # =====(3)Feature reduction：PCA、cor================================
 # =====(3-1-(1))prcomp method================================
-# log transform 
-log.f_log <- log1p(f_in_csv[ ,2:30])
-f_log.disease <- f_in_csv[ ,1]
-# apply PCA - scale. = TRUE is highly advisable, but default is FALSE. 
-disease.pca <- prcomp(log.f_log,center = TRUE, scale. = TRUE)
+## log transform 
+#log.f_log <- log1p(f_in_csv[ ,2:30])
+#f_log.disease <- f_in_csv[ ,1]
+## apply PCA - scale. = TRUE is highly advisable, but default is FALSE. 
+#disease.pca <- prcomp(log.f_log,center = TRUE, scale. = TRUE)
 
 # =====(3-1-(2))FactoMineR method================================
 #log.f_log <- log1p(f_in_csv[ ,2:30])
@@ -226,8 +247,32 @@ corrplot(cor(f_in_csv[, -1], method = "pearson"), number.cex = .9, method = "squ
          , tl.cex=1.5*0.6 ,tl.col = "black")                     
 dev.off()
 
+# =====(3-3)chi-square test: preprocess cols and target y================================
+chi_square_data <- c("col_order", "col_name", "X-squared", "df", "p-value")
+for(i in c(2:length(colnames(f_in_csv))))
+{
+
+    chi_obj <- chisq.test(f_in_csv$HeartDisease, f_in_csv[,i], correct=FALSE)
+    
+    if(chi_obj[[3]] < 0.05)
+    {
+        chi_square_data <- rbind(chi_square_data, c(i, colnames(f_in_csv)[[i]], chi_obj[[1]], chi_obj[[2]], as.numeric(chi_obj[[3]])))
+        #print(c(i, chi_obj[[1]], chi_obj[[2]], chi_obj[[3]]))
+        #message(sprintf("%d : %s col has relation with HeartDisease", i, colnames(f_in_csv)[[i]]))
+    }
+        
+}
+
+df <- data.frame(chi_square_data)
+colnames(df) <- df[1,]
+df <- df[-1, ] 
+write.csv(df, sprintf("%s/cor_preprocess_chi-square.csv", f_out), row.names = FALSE)
+
+
 # =====(4-1)prepare base cols for rpart================================
 base_cols <- paste(colnames(f_in_csv)[-1], collapse="+")# "V3+V4+...+V5602"
+#base_cols <- "BMI+Smoking+Stroke+DiffWalking+Sex+AgeCategory+Asthma+KidneyDisease+Race_Hispanic+GenHealth_Excellent+GenHealth_Fair+GenHealth_Good+GenHealth_Poor"
+#base_cols <- "PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10+PC11+PC12+PC13+PC14+PC15+PC16+PC17+PC18+PC19+PC20+PC21+PC22"
 #base_cols <- paste(cor_cols, collapse="+")# "V3+V4+...+V5602"
 
 
@@ -258,7 +303,7 @@ test_Sensitivity_ls <- c()
 test_Specificity_ls <- c()
 test_F1_ls <- c()
 test_auc_ls <- c()
-#model_ls <- c()
+model_ls <- c()
 #model_fold_best <- NA
 
 library('ROCR')
@@ -299,7 +344,7 @@ for( m in seq(1, k_fold_num)){
   if(valid_backward_up == 0)
   {
     df_validate_set <- f_in_csv[valid_lw:valid_up,]
-    df_train_set <- smote(HeartDisease ~ ., data  =f_in_csv[c(-(test_lw:test_up), -(valid_lw:valid_up)),])
+    df_train_set <- smote(HeartDisease ~ ., data  =f_in_csv[c(-(test_lw:test_up), -(valid_lw:valid_up)),])#, perc.over = 4, perc.under = 1)
     #df_train_set <- f_in_csv[c(-(test_lw:test_up), -(valid_lw:valid_up)),]
     message(sprintf("df_validate_set is from %s to %s",valid_lw, valid_up))
     message(sprintf("df_train_set isn't within %s to %s and %s to %s , balanced num is %s",test_lw, test_up, valid_lw, valid_up, nrow(df_train_set)))
@@ -309,7 +354,7 @@ for( m in seq(1, k_fold_num)){
     
   }else{
     df_validate_set <- f_in_csv[c(valid_lw:f_in_nums, 1:valid_backward_up),]
-    df_train_set <- smote(HeartDisease ~ ., data  =f_in_csv[c(-(test_lw:test_up), -(valid_lw:f_in_nums), -(1:valid_backward_up)),])    
+    df_train_set <- smote(HeartDisease ~ ., data  =f_in_csv[c(-(test_lw:test_up), -(valid_lw:f_in_nums), -(1:valid_backward_up)),])#, perc.over = 4, perc.under = 1)   
     #df_train_set <- f_in_csv[c(-(test_lw:test_up), -(valid_lw:f_in_nums), -(1:valid_backward_up)),]
     
     
@@ -337,7 +382,9 @@ for( m in seq(1, k_fold_num)){
     model <<- rpart(paste("HeartDisease", base_cols, sep="~"), #rpart(V2 ~ V3 + V4 + V5600 + V5601 + V5602,
                  data=df_train_set, control=rpart.control(
                                                     
-                                                    minsplit = 5, minbucket = 5, cp = 0.002
+                                                    #minsplit = 5, minbucket = 5, cp = 0.002
+                                                    minsplit = 5, minbucket = 5, cp = 0.001 #better
+                                                    #minsplit = 5, minbucket = 5, cp = 0.0005 #better
                                                     #minbucket=30
                                                     #, cp=0.00095
                                                     #, maxcompete=4
@@ -353,7 +400,7 @@ for( m in seq(1, k_fold_num)){
                   
   , error  = function(w) { print("Hey, there is a error about that all class is the same!")})
   
-  #model_ls <- c(model_ls, model)
+  model_ls <- c(model_ls, model)
   png(file=sprintf("%s/model_fold_%s.png", f_out, r+1), width=1920, height=1080, res=141)
   rpart.plot(model)
   dev.off()
