@@ -78,8 +78,14 @@ balance_data <- function (df) {
     # return(df)
 
     # New smote method
-    smote_data <- smote(HeartDisease ~ ., data = df[1:nrow(df),])
-    smote_data <- na.omit(smote_data)
+    # smote_data <- smote(HeartDisease ~ ., data = df[1:nrow(df),])
+    # smote_data <- smote(HeartDisease ~ ., data = df)
+    # smote_data <- na.omit(smote_data)
+    # smote_file <- "smoted_data.csv"
+    # dir.create(dirname(smote_file), recursive = TRUE, showWarnings = FALSE)
+    # write.csv(smote_data, smote_file, row.names = FALSE, quote = FALSE)
+    # stop("smoted_data.csv is generated.")
+    smote_data <- read.csv("smoted_data.csv", header=TRUE)
     return(smote_data)
 }
 
@@ -138,12 +144,20 @@ if (fold < 3) {
 
 df <- read.csv(input_file, header=TRUE)
 set.seed(42)
+
 # Shuffle samples
 df <- df[sample(1:nrow(df)), ]
+
+# Testing
 # df <- df[1:10000,]
 # df <- df[1:nrow(df) - 100000,]
+
 df <- transform_data_column(df=df)
-fold_size <- nrow(df) %/% fold
+# selected_features = c('HeartDisease', 'BMI', 'AlcoholDrinking', 'Stroke', 'PhysicalHealth', 'MentalHealth',
+#  'DiffWalking', 'Sex', 'AgeCategory', 'Asthma', 'KidneyDisease', 'Race_Black', 
+#  'Race_Hispanic', 'Race_White', 'Diabetic_Yes', 'GenHealth_Fair', 'GenHealth_Poor')
+# df <- df[, selected_features]
+# fold_size <- nrow(df) %/% fold
 
 result <- split_data(df=df)
 train_df <- result[[1]]
@@ -152,10 +166,12 @@ valid_df <- result[[2]]
 message('Before somte: ')
 print(table(train_df$HeartDisease))
 train_df <- balance_data(df=train_df)
+# train_df <- train_df[, selected_features]
+train_df$HeartDisease <- as.factor(train_df$HeartDisease)
 message('After somte: ')
 print(table(train_df$HeartDisease))
 
-model <- randomForest(HeartDisease ~ ., data=train_df, ntree=20, mtry=3, importance=TRUE)
+model <- randomForest(HeartDisease ~ ., data=train_df, ntree=100, mtry=3, importance=TRUE)
 val_pred <- predict(model, valid_df, type="class")
 # print(val_pred)
 # stop()
@@ -165,7 +181,9 @@ val_pred <- predict(model, valid_df, type="class")
 # Importance
 feature_importance <- importance(model)
 print(feature_importance)
-# varImpPlot(model)
+pdf("../results/varImpPlot.pdf")
+varImpPlot(model)
+dev.off()
 # selected_features <- names(feature_importance)[feature_importance > threshold]
 # train_selected <- train_df[, c("HeartDisease", selected_features)]
 
@@ -179,25 +197,48 @@ FP <- sum(valid_df$HeartDisease == 0 & val_pred == 1)
 specificity <- TN / (TN + FP)
 f1_score <- 2 * precision * recall / (precision + recall)
 
+accuracy <- round(accuracy, 2)
+precision <- round(precision, 2)
+recall <- round(recall, 2)
+specificity <- round(specificity, 2)
+f1_score <- round(f1_score, 2)
+
+
 message('Confusion Matrix:')
 print(confusion_matrix)
-message('Accuracy:', round(accuracy, 2))
-message('Precision:', round(precision, 2))
-message('sensitivity(Recall):', round(recall, 2))
-message('Specificity:', round(specificity, 2))
-message('F1 Score:', round(f1_score, 2))
+message('Accuracy:', accuracy)
+message('Precision:', precision)
+message('sensitivity(Recall):', recall)
+message('Specificity:', specificity)
+message('F1 Score:', f1_score)
 
 #AUC
 roc_obj <- roc(valid_df$HeartDisease, as.numeric(val_pred))
 auc <- auc(roc_obj)
-message('AUC:', round(auc, 2))
+auc <- round(auc, 2)
+message('AUC:', auc)
+
+
 
 #ROC
-# pdf("roc_curve.pdf")
+pdf("../results/roc_curve_after_smote.pdf")
 plot(roc_obj, main = "ROC Curve")
 abline(0, 1, lty = 2)  # 繪製對角線
-legend("bottomright", legend = paste("AUC =", round(auc, 2)), bty = "n")  # 在圖例中顯示 AUC
-# dev.off()
+legend("bottomright", legend = paste("AUC =", auc), bty = "n")  # 在圖例中顯示 AUC
+dev.off()
+
+# Write to file
+result_df <- data.frame(
+  Accuracy = accuracy,
+  Precision = precision,
+  Sensitivity = recall,
+  Specificity = specificity,
+  F1_Score = f1_score,
+  AUC = auc
+)
+output_file <- "../results/result.csv"
+dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
+write.csv(result_df, output_file, row.names = FALSE, quote = FALSE)
 
 end_time <- Sys.time()
 cat("Time takens: ", end_time - start_time, ' seconds.\n')
