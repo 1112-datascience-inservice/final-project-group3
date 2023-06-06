@@ -85,7 +85,7 @@ balance_data <- function (df) {
     # dir.create(dirname(smote_file), recursive = TRUE, showWarnings = FALSE)
     # write.csv(smote_data, smote_file, row.names = FALSE, quote = FALSE)
     # stop("smoted_data.csv is generated.")
-    smote_data <- read.csv("smoted_data.csv", header=TRUE)
+    smote_data <- read.csv("../data/smoted_data.csv", header=TRUE)
     return(smote_data)
 }
 
