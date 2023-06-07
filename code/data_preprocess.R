@@ -16,12 +16,18 @@ if (require(caret)) {
   stop("library caret not exist, please install.")
 }
 
+if (require(performanceEstimation)) {
+  message("library performanceEstimation load success.")
+} else {
+  stop("library performanceEstimation not exist, please install.")
+}
 
-get_data <- function() {
 
-	f_in = '../data/heart_2020_cleaned.csv'
+get_origin_data <- function() {
+
+	source_file = '../data/heart_2020_cleaned.csv'
 	
-	df <- read.csv(f_in, header = T)
+	df <- read.csv(source_file, header = T)
 	
 	duplicate<- duplicated(df)
 	if (sum(duplicate) > 0){
@@ -76,7 +82,17 @@ get_data <- function() {
     test_df <- df[-train_index,]
 
     # smote train data
-    train_df <- smote(HeartDisease ~ ., data = train_df)
+    # train_df <- smote(HeartDisease ~ ., data = train_df)
+
+	return(list(train_df, test_df))
+}
+
+get_preprocessed_data <- function() {
+	train_file = '../data/smoted_train_data.csv'
+	train_df <- read.csv(train_file, header = T)
+		
+	test_file = '../data/smoted_test_data.csv'
+	test_df <- read.csv(test_file, header = T)
 
 	return(list(train_df, test_df))
 }
