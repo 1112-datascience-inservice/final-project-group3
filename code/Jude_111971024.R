@@ -156,6 +156,9 @@ df <- transform_data_column(df=df)
 # selected_features = c('HeartDisease', 'BMI', 'AlcoholDrinking', 'Stroke', 'PhysicalHealth', 'MentalHealth',
 #  'DiffWalking', 'Sex', 'AgeCategory', 'Asthma', 'KidneyDisease', 'Race_Black', 
 #  'Race_Hispanic', 'Race_White', 'Diabetic_Yes', 'GenHealth_Fair', 'GenHealth_Poor')
+selected_features = c('HeartDisease', 'BMI', 'Smoking', 'Stroke',
+ 'DiffWalking', 'Sex', 'AgeCategory', 'Asthma', 'KidneyDisease', 
+ 'Race_Hispanic', 'GenHealth_Excellent', 'GenHealth_Good', 'GenHealth_Fair', 'GenHealth_Poor')
 # df <- df[, selected_features]
 # fold_size <- nrow(df) %/% fold
 
