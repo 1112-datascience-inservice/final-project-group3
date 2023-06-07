@@ -1,10 +1,8 @@
-
 if (require(xgboost)) {
   message("library xgboost load success.")
 } else {
   stop("library xgboost not exist, please install.")
 }
-
 
 train_xgboost_model <- function(train_df) {
     # Prepare Model Data

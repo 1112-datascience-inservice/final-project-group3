@@ -1,17 +1,9 @@
 source("data_preprocess.R")
+source("decision_tree.R")
+source("random_forest.R")
+source("xgboost.R")
+source("evaluation.R")
 
-
-if (require(randomForest)) {
-  message("library randomForest load success.")
-} else {
-  stop("library randomForest not exist, please install.")
-}
-
-if (require(rpart)) {
-  message("library rpart load success.")
-} else {
-  stop("library rpart not exist, please install.")
-}
 
 #input資料檢查
 args <- commandArgs(trailingOnly=TRUE)
@@ -23,7 +15,7 @@ while (i < length(args)) {
   if (args[i] == "--data_source" || args[i] == "--d") {
     data_source<-args[i+1]
     i <- i+1
-  } else if (args[i] == "--model") {
+  } else if (args[i] == "--model" || args[i] == "--m") {
     model_selection<-args[i+1]
     i <- i+1
   } else {
@@ -33,17 +25,17 @@ while (i < length(args)) {
 }
 
 if (is.na(data_source)) {
-  	stop("Missing required parameters '--data_source'", call.=FALSE)
+  stop("Missing required parameters '--data_source' or '--d'", call.=FALSE)
 } else if (data_source != 1 && data_source != 2) {
-	stop("data_source must 1(origin) or 2(pre-processed)", call.=FALSE)
+	stop("data_source must be 1(origin) or 2(pre-processed)", call.=FALSE)
 } else {
   message("data_source using is ", data_source)
 }
 
 if (is.na(model_selection)) {
-  stop("Missing required parameters '--model'", call.=FALSE)
+  stop("Missing required parameters '--model' or '--m'", call.=FALSE)
 } else if (model_selection != 1 && model_selection != 2 && model_selection != 3) {
-	stop("model must 1(decision tree) or 2(random forest) or 3(xgboost)", call.=FALSE)
+	stop("model must be 1(decision tree) or 2(random forest) or 3(xgboost)", call.=FALSE)
 }else{
   message("model using is ", model_selection)  
 }
@@ -71,15 +63,12 @@ model <- NA
 if (nrow(train_df) > 0) {
 	if (model_selection == 1) {
 		# Decision Tree
-		base_cols <- "BMI+Smoking+Stroke+DiffWalking+Sex+AgeCategory+Asthma+KidneyDisease+Race_Hispanic+GenHealth_Excellent+GenHealth_Fair+GenHealth_Good+GenHealth_Poor"
-    	model <- rpart(paste("HeartDisease", base_cols, sep="~"), data=train_df, control=rpart.control(minsplit = 5, minbucket = 5, cp = 0.001), method="class")
+		model <- train_decision_tree_model(train_df)
 	} else if (model_selection == 2) {
 		# Random Forest
-		# base_cols <- "BMI+Smoking+Stroke+DiffWalking+Sex+AgeCategory+Asthma+KidneyDisease+Race_Hispanic+GenHealth_Excellent+GenHealth_Fair+GenHealth_Good+GenHealth_Poor"
-		model <- randomForest(as.factor(HeartDisease)~. ,data=train_df, importance=TRUE, ntree=10, mtry=3, keep.forest = TRUE)
+		model <- train_random_forest_model(train_df)
 	} else if (model_selection == 3) {
-		#XGBoost
-		source("xgboost.R")
+		#XGBoost - xgboost.R
 		model <- train_xgboost_model(train_df)
 	}
 } else {
@@ -91,11 +80,7 @@ if (nrow(train_df) > 0) {
 predictions = predict(model, newdata = test_df, type = "class")
 
 
-
 #評估結果
-confusion_matrix <- table(test_df$HeartDisease, predictions)
-# cf <- confusionMatrix(factor(binary_predictions_selected), factor(test_labels), positive='1')
-
-print(confusion_matrix)
+evaluation(test_df$HeartDisease, predictions)
 
 
