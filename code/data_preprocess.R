@@ -1,54 +1,82 @@
-library('fastDummies')
-library('dplyr')
+if (require(dplyr)) {
+  message("library dplyr load success.")
+} else {
+  stop("library dplyr not exist, please install.")
+}
+
+if (require(fastDummies)) {
+  message("library fastDummies load success.")
+} else {
+  stop("library fastDummies not exist, please install.")
+}
+
+if (require(caret)) {
+  message("library caret load success.")
+} else {
+  stop("library caret not exist, please install.")
+}
+
 
 get_data <- function() {
 
 	f_in = '../data/heart_2020_cleaned.csv'
 	
-	f_in_csv <- read.csv(f_in, header = T)
+	df <- read.csv(f_in, header = T)
 	
-	duplicate<- duplicated(f_in_csv)
+	duplicate<- duplicated(df)
 	if (sum(duplicate) > 0){
 	    sprintf("has duplicated row %d", sum(duplicate))
-	    f_in_csv <- distinct(f_in_csv)
+	    df <- distinct(df)
 	}
 	
 	# Age should be numerical, I will convert age variable into numeric variable taking mean age of each level of age.
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='18-24'] <- 21
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='25-29'] <- 27
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='30-34'] <- 32
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='35-39'] <- 37
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='40-44'] <- 42
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='45-49'] <- 47
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='50-54'] <- 52
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='55-59'] <- 57
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='60-64'] <- 62
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='65-69'] <- 67
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='70-74'] <- 72
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='75-79'] <- 77
-	f_in_csv$AgeCategory[f_in_csv$AgeCategory=='80 or older'] <-80
-	f_in_csv$AgeCategory<-as.numeric(f_in_csv$AgeCategory)
+	df$AgeCategory[df$AgeCategory=='18-24'] <- 21
+	df$AgeCategory[df$AgeCategory=='25-29'] <- 27
+	df$AgeCategory[df$AgeCategory=='30-34'] <- 32
+	df$AgeCategory[df$AgeCategory=='35-39'] <- 37
+	df$AgeCategory[df$AgeCategory=='40-44'] <- 42
+	df$AgeCategory[df$AgeCategory=='45-49'] <- 47
+	df$AgeCategory[df$AgeCategory=='50-54'] <- 52
+	df$AgeCategory[df$AgeCategory=='55-59'] <- 57
+	df$AgeCategory[df$AgeCategory=='60-64'] <- 62
+	df$AgeCategory[df$AgeCategory=='65-69'] <- 67
+	df$AgeCategory[df$AgeCategory=='70-74'] <- 72
+	df$AgeCategory[df$AgeCategory=='75-79'] <- 77
+	df$AgeCategory[df$AgeCategory=='80 or older'] <-80
+	df$AgeCategory<-as.numeric(df$AgeCategory)
 	
 	
 	#Encode categorical variables
-	f_in_csv$HeartDisease<- ifelse(f_in_csv$HeartDisease=='Yes',1,0)
-	f_in_csv$Smoking<- ifelse(f_in_csv$Smoking=='Yes',1,0)
-	f_in_csv$AlcoholDrinking<-ifelse(f_in_csv$AlcoholDrinking=='Yes',1,0)
-	f_in_csv$Stroke<-ifelse(f_in_csv$Stroke=='Yes',1,0)
-	f_in_csv$DiffWalking<-ifelse(f_in_csv$DiffWalking=='Yes',1,0)
-	f_in_csv$Sex<-ifelse(f_in_csv$Sex=='Male',1,0)
-	f_in_csv$PhysicalActivity<-ifelse(f_in_csv$PhysicalActivity=='Yes',1,0)
-	f_in_csv$Asthma<-ifelse(f_in_csv$Asthma=='Yes',1,0)
-	f_in_csv$KidneyDisease<-ifelse(f_in_csv$KidneyDisease=='Yes',1,0)
-	f_in_csv$SkinCancer<-ifelse(f_in_csv$SkinCancer=='Yes',1,0)
-	f_in_csv <- dummy_cols(f_in_csv, select_columns = c('Race', 'Diabetic', 'GenHealth'), remove_selected_columns = TRUE)
+	df$HeartDisease<- ifelse(df$HeartDisease=='Yes',1,0)
+	df$Smoking<- ifelse(df$Smoking=='Yes',1,0)
+	df$AlcoholDrinking<-ifelse(df$AlcoholDrinking=='Yes',1,0)
+	df$Stroke<-ifelse(df$Stroke=='Yes',1,0)
+	df$DiffWalking<-ifelse(df$DiffWalking=='Yes',1,0)
+	df$Sex<-ifelse(df$Sex=='Male',1,0)
+	df$PhysicalActivity<-ifelse(df$PhysicalActivity=='Yes',1,0)
+	df$Asthma<-ifelse(df$Asthma=='Yes',1,0)
+	df$KidneyDisease<-ifelse(df$KidneyDisease=='Yes',1,0)
+	df$SkinCancer<-ifelse(df$SkinCancer=='Yes',1,0)
+	df <- dummy_cols(df, select_columns = c('Race', 'Diabetic', 'GenHealth'), remove_selected_columns = TRUE)
 	
 	
-	f_in_csv<-rename(f_in_csv
+	df<-rename(df
 	    , Race_American_Indian_Alaskan_Native = 'Race_American Indian/Alaskan Native'
 	    ,Diabetic_No_borderline_diabetes ='Diabetic_No, borderline diabetes'
 	    , Diabetic_Yes_during_pregnancy ='Diabetic_Yes (during pregnancy)'
 	    ,GenHealth_Very_Good='GenHealth_Very good')
 
-	return(f_in_csv)
+
+	# Shuffle samples
+	df <- df[sample(1:nrow(df)), ]
+
+	# split data train 70% test 30%
+    train_index <- createDataPartition(df$HeartDisease, p = .7, list = FALSE)
+    train_df <- df[train_index,]
+    test_df <- df[-train_index,]
+
+    # smote train data
+    train_df <- smote(HeartDisease ~ ., data = train_df)
+
+	return(list(train_df, test_df))
 }
