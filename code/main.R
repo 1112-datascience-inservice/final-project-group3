@@ -5,6 +5,7 @@ source("xgboost.R")
 source("evaluation.R")
 
 
+message("=======START=======")
 #input資料檢查
 args <- commandArgs(trailingOnly=TRUE)
 
@@ -29,7 +30,12 @@ if (is.na(data_source)) {
 } else if (data_source != 1 && data_source != 2) {
 	stop("data_source must be 1(origin) or 2(pre-processed)", call.=FALSE)
 } else {
-  message("data_source using is ", data_source)
+	data_source_str <- case_when(
+		data_source == 1 ~ 'orgin data',
+		data_source == 2 ~ 'pre-processed data',
+		TRUE ~ data_source
+	)
+  message("data_source using is ", data_source_str)
 }
 
 if (is.na(model_selection)) {
@@ -37,7 +43,13 @@ if (is.na(model_selection)) {
 } else if (model_selection != 1 && model_selection != 2 && model_selection != 3) {
 	stop("model must be 1(decision tree) or 2(random forest) or 3(xgboost)", call.=FALSE)
 }else{
-  message("model using is ", model_selection)  
+	model_selection_str <- case_when(
+		model_selection == 1 ~ 'decision tree',
+		model_selection == 2 ~ 'random forest',
+		model_selection == 3 ~ 'xgboost',
+		TRUE ~ model_selection
+	)
+  message("model using is ", model_selection_str)  
 }
 
 
@@ -49,38 +61,35 @@ if (data_source == 1) {
 	train_df <- data_get_result[[1]]
 	test_df <- data_get_result[[2]]
 } else if (data_source == 2) {
-	#讀取已smote檔案
+	#讀取preprocess檔案
 	data_get_result <- get_preprocessed_data()
 	train_df <- data_get_result[[1]]
 	test_df <- data_get_result[[2]]
 }
 
-summary(train_df)
-summary(test_df)
-
 #根據input 選擇model
-model <- NA
+predictions = data.frame()
 if (nrow(train_df) > 0) {
 	if (model_selection == 1) {
 		# Decision Tree
-		model <- train_decision_tree_model(train_df)
+		predictions <- decision_tree_model(train_df, test_df)
 	} else if (model_selection == 2) {
 		# Random Forest
-		model <- train_random_forest_model(train_df)
+		predictions <- random_forest_model(train_df, test_df)
 	} else if (model_selection == 3) {
 		#XGBoost - xgboost.R
-		model <- train_xgboost_model(train_df)
+		predictions <- xgboost_model(train_df, test_df)
 	}
 } else {
 	stop("訓練資料取得失敗")
 }
 
-
-#test data predict
-predictions = predict(model, newdata = test_df, type = "class")
-
-
 #評估結果
-evaluation(test_df$HeartDisease, predictions)
+if (nrow(data.frame(predictions)) > 0) {
+	evaluation(test_df$HeartDisease, predictions)	
+} else {
+	stop("預測結果取得失敗")
+}
 
+message("=======END=======")
 

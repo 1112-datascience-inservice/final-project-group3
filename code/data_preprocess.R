@@ -82,16 +82,21 @@ get_origin_data <- function() {
     test_df <- df[-train_index,]
 
     # smote train data
-    # train_df <- smote(HeartDisease ~ ., data = train_df)
+    train_df <- smote(HeartDisease ~ ., data = train_df)
+    train_df <- na.omit(train_df)
+
+    # export pre-process data file
+    # write.csv(train_df, '../data/preprocess_train_data.csv', row.names = FALSE, quote = FALSE)
+    # write.csv(test_df, '../data/preprocess_test_data.csv', row.names = FALSE, quote = FALSE)
 
 	return(list(train_df, test_df))
 }
 
 get_preprocessed_data <- function() {
-	train_file = '../data/smoted_train_data.csv'
+	train_file = '../data/preprocess_train_data.csv'
 	train_df <- read.csv(train_file, header = T)
 		
-	test_file = '../data/smoted_test_data.csv'
+	test_file = '../data/preprocess_test_data.csv'
 	test_df <- read.csv(test_file, header = T)
 
 	return(list(train_df, test_df))
