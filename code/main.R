@@ -2,8 +2,6 @@ source("data_preprocess.R")
 source("decision_tree.R")
 source("random_forest.R")
 source("xgboost.R")
-source("evaluation.R")
-
 
 message("=======START=======")
 #input資料檢查
@@ -55,16 +53,20 @@ if (is.na(model_selection)) {
 
 #取得資料
 train_df = data.frame()
+valid_df = data.frame()
 test_df = data.frame()
+
 if (data_source == 1) {
 	data_get_result <- get_origin_data()	
 	train_df <- data_get_result[[1]]
-	test_df <- data_get_result[[2]]
+	valid_df <- data_get_result[[2]]
+	test_df <- data_get_result[[3]]
 } else if (data_source == 2) {
 	#讀取preprocess檔案
 	data_get_result <- get_preprocessed_data()
 	train_df <- data_get_result[[1]]
-	test_df <- data_get_result[[2]]
+	valid_df <- data_get_result[[2]]
+	test_df <- data_get_result[[3]]
 }
 
 #根據input 選擇model
@@ -82,13 +84,6 @@ if (nrow(train_df) > 0) {
 	}
 } else {
 	stop("訓練資料取得失敗")
-}
-
-#評估結果
-if (nrow(data.frame(predictions)) > 0) {
-	evaluation(test_df$HeartDisease, predictions)	
-} else {
-	stop("預測結果取得失敗")
 }
 
 message("=======END=======")

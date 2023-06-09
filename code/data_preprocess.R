@@ -1,29 +1,56 @@
 if (require(dplyr)) {
-  message("library dplyr load success.")
+  print("library dplyr load success.")
 } else {
-  stop("library dplyr not exist, please install.")
+  print("library dplyr not exist, start to install.")
+  install.packages('dplyr', repos = "http://cran.us.r-project.org")
+  if (require(dplyr)) {
+    print('library dplyr load success.')
+  } else {
+    stop("library dplyr load failed.")
+  }
 }
 
 if (require(fastDummies)) {
-  message("library fastDummies load success.")
+  print("library fastDummies load success.")
 } else {
-  stop("library fastDummies not exist, please install.")
+  print("library fastDummies not exist, start to install.")
+  install.packages('fastDummies', repos = "http://cran.us.r-project.org")
+  if (require(fastDummies)) {
+    print('library fastDummies load success.')
+  } else {
+    stop("library fastDummies load failed.")
+  }
 }
 
 if (require(caret)) {
-  message("library caret load success.")
+  print("library caret load success.")
 } else {
-  stop("library caret not exist, please install.")
+  print("library caret not exist, start to install.")
+  install.packages('caret', repos = "http://cran.us.r-project.org")
+  if (require(caret)) {
+    print('library caret load success.')
+  } else {
+    stop("library caret load failed.")
+  }
 }
 
 if (require(performanceEstimation)) {
-  message("library performanceEstimation load success.")
+  print("library performanceEstimation load success.")
 } else {
-  stop("library performanceEstimation not exist, please install.")
+  print("library performanceEstimation not exist, start to install.")
+  install.packages('performanceEstimation', repos = "http://cran.us.r-project.org")
+  if (require(performanceEstimation)) {
+    print('library performanceEstimation load success.')
+  } else {
+    stop("library performanceEstimation load failed.")
+  }
 }
 
-
 get_origin_data <- function() {
+
+	train_df = data.frame()
+	valid_df = data.frame()
+	test_df = data.frame()
 
 	source_file = '../data/heart_2020_cleaned.csv'
 	
@@ -85,19 +112,19 @@ get_origin_data <- function() {
     train_df <- smote(HeartDisease ~ ., data = train_df)
     train_df <- na.omit(train_df)
 
-    # export pre-process data file
-    # write.csv(train_df, '../data/preprocess_train_data.csv', row.names = FALSE, quote = FALSE)
-    # write.csv(test_df, '../data/preprocess_test_data.csv', row.names = FALSE, quote = FALSE)
-
-	return(list(train_df, test_df))
+	return(list(train_df, valid_df, test_df))
 }
 
 get_preprocessed_data <- function() {
+	train_df = data.frame()
+	valid_df = data.frame()
+	test_df = data.frame()
+	
 	train_file = '../data/preprocess_train_data.csv'
 	train_df <- read.csv(train_file, header = T)
 		
 	test_file = '../data/preprocess_test_data.csv'
 	test_df <- read.csv(test_file, header = T)
 
-	return(list(train_df, test_df))
+	return(list(train_df, valid_df, test_df))
 }
