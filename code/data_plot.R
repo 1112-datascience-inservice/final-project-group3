@@ -1,27 +1,27 @@
 # 檢查libaray，若沒有則下載並載入
 if (require(dplyr)) {
-  message("library dplyr load success.")
+  print("library dplyr load success.")
 } else {
-  stop("library dplyr not exist, please install.")
+  print("library dplyr not exist, start to install.")
+  install.packages('dplyr', repos = "http://cran.us.r-project.org")
+  if (require(dplyr)) {
+    print('library dplyr load success.')
+  } else {
+    stop("library dplyr load failed.")
+  }
 }
 
 if (require(ggplot2)) {
-  message("library ggplot2 load success.")
+  print("library ggplot2 load success.")
 } else {
-  stop("library ggplot2 not exist, please install.")
+  print("library ggplot2 not exist, start to install.")
+  install.packages('ggplot2', repos = "http://cran.us.r-project.org")
+  if (require(ggplot2)) {
+    print('library ggplot2 load success.')
+  } else {
+    stop("library ggplot2 load failed.")
+  }
 }
-
-# if (require(ggplot2)) {
-#   print("library ggplot2 load success.")
-# } else {
-#   print("library ggplot2 not exist, start to install.")
-#   install.packages('ggplot2', repos = "http://cran.us.r-project.org")
-#   if (require(ggplot2)) {
-#     print('library ggplot2 load success.')
-#   } else {
-#     stop("library ggplot2 load failed.")
-#   }
-# }
 
 pdf("../results/data_plot.pdf")
 
