@@ -1,27 +1,3 @@
-if (require(randomForest)) {
-  print("library randomForest load success.")
-} else {
-  print("library randomForest not exist, start to install.")
-  install.packages('randomForest', repos = "http://cran.us.r-project.org")
-  if (require(randomForest)) {
-    print('library randomForest load success.')
-  } else {
-    stop("library randomForest load failed.")
-  }
-}
-
-if (require(pROC)) {
-  print("library pROC load success.")
-} else {
-  print("library pROC not exist, start to install.")
-  install.packages('pROC', repos = "http://cran.us.r-project.org")
-  if (require(pROC)) {
-    print('library pROC load success.')
-  } else {
-    stop("library pROC load failed.")
-  }
-}
-
 random_forest_model <- function(train_df, test_df) {
 
   ntree <- 100

@@ -1,3 +1,4 @@
+source("library.R")
 source("data_preprocess.R")
 source("decision_tree.R")
 source("random_forest.R")
@@ -51,40 +52,44 @@ if (is.na(model_selection)) {
 }
 
 
-#取得資料
-train_df = data.frame()
-valid_df = data.frame()
-test_df = data.frame()
-
-if (data_source == 1) {
-	data_get_result <- get_origin_data()	
-	train_df <- data_get_result[[1]]
-	valid_df <- data_get_result[[2]]
-	test_df <- data_get_result[[3]]
-} else if (data_source == 2) {
-	#讀取preprocess檔案
-	data_get_result <- get_preprocessed_data()
-	train_df <- data_get_result[[1]]
-	valid_df <- data_get_result[[2]]
-	test_df <- data_get_result[[3]]
-}
-
-#根據input 選擇model
-predictions = data.frame()
-if (nrow(train_df) > 0) {
-	if (model_selection == 1) {
-		# Decision Tree
-		predictions <- decision_tree_model(train_df, test_df)
-	} else if (model_selection == 2) {
-		# Random Forest
-		predictions <- random_forest_model(train_df, test_df)
-	} else if (model_selection == 3) {
-		#XGBoost - xgboost.R
-		predictions <- xgboost_model(train_df, test_df)
+if (model_selection == 1) {
+	if (data_source == 2) {
+		stop("抱歉 Decision Tree 不支援讀取預處理資料", call.=FALSE)
 	}
-} else {
-	stop("訓練資料取得失敗")
-}
+	decision_tree_model()
 
+} else {
+	#取得資料
+	train_df = data.frame()
+	valid_df = data.frame()
+	test_df = data.frame()
+
+	if (data_source == 1) {
+		data_get_result <- get_origin_data()	
+		train_df <- data_get_result[[1]]
+		valid_df <- data_get_result[[2]]
+		test_df <- data_get_result[[3]]
+	} else if (data_source == 2) {
+		#讀取preprocess檔案
+		data_get_result <- get_preprocessed_data()
+		train_df <- data_get_result[[1]]
+		valid_df <- data_get_result[[2]]
+		test_df <- data_get_result[[3]]
+	}
+
+	#根據input 選擇model
+	predictions = data.frame()
+	if (nrow(train_df) > 0) {
+		if (model_selection == 2) {
+			# Random Forest
+			random_forest_model(train_df, test_df)
+		} else if (model_selection == 3) {
+			#XGBoost - xgboost.R
+			xgboost_model(train_df, test_df)
+		}
+	} else {
+	stop("訓練資料取得失敗")
+	}
+}
 message("=======END=======")
 

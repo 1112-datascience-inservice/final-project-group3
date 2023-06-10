@@ -1,27 +1,3 @@
-if (require(xgboost)) {
-  print("library xgboost load success.")
-} else {
-  print("library xgboost not exist, start to install.")
-  install.packages('xgboost', repos = "http://cran.us.r-project.org")
-  if (require(xgboost)) {
-    print('library xgboost load success.')
-  } else {
-    stop("library xgboost load failed.")
-  }
-}
-
-if (require(Ckmeans.1d.dp)) {
-  print("library Ckmeans.1d.dp load success.")
-} else {
-  print("library Ckmeans.1d.dp not exist, start to install.")
-  install.packages('Ckmeans.1d.dp', repos = "http://cran.us.r-project.org")
-  if (require(Ckmeans.1d.dp)) {
-    print('library Ckmeans.1d.dp load success.')
-  } else {
-    stop("library Ckmeans.1d.dp load failed.")
-  }
-}
-
 xgboost_model <- function(train_df, test_df) {
     # 加載訓練數據和測試數據，並準備特徵矩陣和標籤
     train_features_smote <- as.matrix(train_df[, -1])
