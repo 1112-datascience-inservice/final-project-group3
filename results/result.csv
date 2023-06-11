@@ -1,2 +1,2 @@
 Accuracy,Precision,Sensitivity,Specificity,F1_Score,AUC
-0.82,0.27,0.62,0.84,0.374,0.732
+0.82,0.27,0.65,0.83,0.38,0.74
