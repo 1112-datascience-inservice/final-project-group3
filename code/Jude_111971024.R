@@ -185,7 +185,8 @@ val_pred <- predict(model, valid_df, type="class")
 feature_importance <- importance(model)
 print(feature_importance)
 pdf("../results/varImpPlot.pdf")
-varImpPlot(model)
+varImpPlot(model, type="1")
+varImpPlot(model, type="2")
 dev.off()
 # selected_features <- names(feature_importance)[feature_importance > threshold]
 # train_selected <- train_df[, c("HeartDisease", selected_features)]
