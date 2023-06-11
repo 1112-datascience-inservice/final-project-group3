@@ -55,6 +55,8 @@ get_origin_data <- function() {
 	# Shuffle samples
 	df <- df[sample(1:nrow(df)), ]
 
+	set.seed(55)
+
 	# split data train 70% test 30%
     train_index <- createDataPartition(df$HeartDisease, p = .7, list = FALSE)
     train_df <- df[train_index,]
@@ -63,6 +65,10 @@ get_origin_data <- function() {
     # smote train data
     train_df <- smote(HeartDisease ~ ., data = train_df)
     train_df <- na.omit(train_df)
+
+    # Write File
+    # write.csv(train_df, '../data/preprocess_train_data.csv', row.names = FALSE, quote = FALSE)
+    # write.csv(test_df, '../data/preprocess_test_data.csv', row.names = FALSE, quote = FALSE)
 
 	return(list(train_df, valid_df, test_df))
 }
