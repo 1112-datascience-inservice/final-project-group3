@@ -79,13 +79,13 @@ balance_data <- function (df) {
 
     # New smote method
     # smote_data <- smote(HeartDisease ~ ., data = df[1:nrow(df),])
-    # smote_data <- smote(HeartDisease ~ ., data = df)
-    # smote_data <- na.omit(smote_data)
+    smote_data <- smote(HeartDisease ~ ., data = df)
+    smote_data <- na.omit(smote_data)
     # smote_file <- "smoted_data.csv"
     # dir.create(dirname(smote_file), recursive = TRUE, showWarnings = FALSE)
     # write.csv(smote_data, smote_file, row.names = FALSE, quote = FALSE)
     # stop("smoted_data.csv is generated.")
-    smote_data <- read.csv("../data/smoted_data.csv", header=TRUE)
+    # smote_data <- read.csv("../data/smoted_data.csv", header=TRUE)
     return(smote_data)
 }
 
@@ -143,7 +143,7 @@ if (fold < 3) {
 }
 
 df <- read.csv(input_file, header=TRUE)
-set.seed(42)
+set.seed(55)
 
 # Shuffle samples
 df <- df[sample(1:nrow(df)), ]
