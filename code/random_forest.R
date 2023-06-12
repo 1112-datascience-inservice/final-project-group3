@@ -63,7 +63,9 @@ random_forest_model <- function(train_df, test_df) {
 
 
   # feature 13
-  selected_features = c('HeartDisease', 'BMI', 'Smoking', 'Stroke','DiffWalking', 'Sex', 'AgeCategory', 'Asthma', 'KidneyDisease', 'Race_Hispanic', 'GenHealth_Excellent', 'GenHealth_Good', 'GenHealth_Fair', 'GenHealth_Poor')
+  selected_features = c('HeartDisease', 'BMI', 'Smoking', 'Stroke',
+    'DiffWalking', 'Sex', 'AgeCategory', 'Asthma', 'KidneyDisease', 
+    'Race_Hispanic', 'GenHealth_Excellent', 'GenHealth_Good', 'GenHealth_Fair', 'GenHealth_Poor')
 
   train_df <- train_df[, selected_features]
   test_df <- test_df[, selected_features]
