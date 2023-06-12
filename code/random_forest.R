@@ -20,7 +20,8 @@ random_forest_model <- function(train_df, test_df) {
   dir.create(dirname(output_imporatance), recursive = TRUE, showWarnings = FALSE)
   # print(feature_importance)
   pdf("../results/randomForest/varImpPlot.pdf")
-  varImpPlot(model)
+  varImpPlot(model, type="1")
+  varImpPlot(model, type="2")
   dev.off()
 
   val_pred <- predict(model, test_df, type="class")
