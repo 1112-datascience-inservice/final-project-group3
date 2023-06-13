@@ -8,7 +8,7 @@ Key Indicators of Heart Disease
 |周正晏|資科碩專一|111971003|資料視覺化處理、data analysis、model traning| 
 |施宗佑|資科碩專一|111971005|data analysis、model traning| 
 |楊昇豐|資科碩專一|111971013|負責data、model、evaluation；也是資料集提供者|
-|謝弘軒|資科碩專一|111971022|Readme edit, Data visualization| 
+|謝弘軒|資科碩專一|111971022|Readme edit, Report edit| 
 |郭書瑋|資科碩專一|111971023|data analysis、model traning| 
 |胡元亨|資科碩專一|111971024|data analysis、model traning| 
 
@@ -16,8 +16,10 @@ Key Indicators of Heart Disease
 ## Quick start
 If our topic interests you, please follow the instructions below to replicate our experimental results.
 ```R
-Rscript code/group3.R --input data/heart_2020_cleaned.csv --output results/performance.tsv
+Rscript main.R --d 2 --m 2
+Rscript main.R --d 2 --m 3
 ```
+![](data/page_33.png)
 
 ## Kaggle project data introduction
 ![](data/Kaggle_image_1.png)
