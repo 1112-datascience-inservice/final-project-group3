@@ -29,9 +29,9 @@ Key Indicators of Heart Disease
     # 決策樹(預估3~6分鐘)
     Rscript code/main.R --data_source 1 --model 1
     # 隨機森林(預估2~5分鐘)
-	  Rscript code/main.R --d 2 --m 2
-	  # XGBoost(預估1~2分鐘)
-	  Rscript code/main.R --d 2 --m 3
+    Rscript code/main.R --d 2 --m 2
+    # XGBoost(預估1~2分鐘)
+    Rscript code/main.R --d 2 --m 3
 
     ```
     參數:
