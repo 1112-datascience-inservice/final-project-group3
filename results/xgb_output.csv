@@ -1,5 +1,0 @@
-method,sensitivity,specificity,F1,auc_ls
-Validation with smote,0.34,0.95,0.37,0.836795380665695
-Test with smote,0.34,0.95,0.37,0.838397060234213
-Validation without smote,0.34,0.95,0.37,0.836795380665695
-Test without smote,0.34,0.95,0.37,0.838397060234213
