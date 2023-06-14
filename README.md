@@ -65,9 +65,9 @@ Rscript code/main.R --data_source 1 --model 1
 ![](data/模型執行情況_2.png)
 ## 介紹最終建議方案
 ### 特徵工程 - chi-squre檢視欄位跟target HeartDisease的顯著性
-![](data/特徵工程 - chi-squre.png)
+![](data/特徵工程-chi-squre.png)
 ### 特徵工程 - 借助glm，得出欄位重要性、共線性
-![](data/特徵工程 - 借助glm.png)
+![](data/特徵工程-借助glm.png)
 
 ### 評估與結論
 * 分析價值
