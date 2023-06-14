@@ -13,11 +13,11 @@ Key Indicators of Heart Disease
 |胡元亨|資科碩專一|111971024|data analysis、model traning(隨機森林)| 
 
 
-## Quick start
-If our topic interests you, please follow the instructions below to replicate our experimental results.
-```
-Rscript code/main.R --data_source 1 --model 1
-```
+## Document position
+我們將專案進行過程中的文件放在資料夾docs底下，有以下幾份關於本次專案的文件：
+  * 簡報.pdf
+  * 簡報草稿.pdf
+  * 討論紀錄.pdf
 ## 如何執行專案
 ### 各程式執行語法
 * Install the required packages
@@ -25,8 +25,14 @@ Rscript code/main.R --data_source 1 --model 1
     Rscript code/library.R
     ```
 * 使用不同模型執行預測，產生各模型預測結果
-    ```
+    ```R
+    # 決策樹(預估3~6分鐘)
     Rscript code/main.R --data_source 1 --model 1
+    # 隨機森林(預估2~5分鐘)
+	  Rscript code/main.R --d 2 --m 2
+	  # XGBoost(預估1~2分鐘)
+	  Rscript code/main.R --d 2 --m 3
+
     ```
     參數:
     * --data_source or --d: 選擇使用的資料集(1: 原始資料, 2: 已處理後資料)
