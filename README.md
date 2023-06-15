@@ -13,7 +13,7 @@ Key Indicators of Heart Disease
 |胡元亨|資科碩專一|111971024|data analysis、model traning(隨機森林)| 
 
 
-## Document position
+## Document Position
 我們將專案進行過程中的文件放在資料夾docs底下，有以下幾份關於本次專案的文件：
   * 簡報.pdf
   * 簡報草稿.pdf
