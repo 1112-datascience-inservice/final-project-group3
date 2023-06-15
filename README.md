@@ -88,6 +88,7 @@ Key Indicators of Heart Disease
   2. eta：又稱為learning_rate，使用預設值0.3。目的：此參數用於防止over fitting。
   3. eval_metric = error ： 此為二進制分類錯誤率，預設使用0.5來判斷。目的：評估每回迭代的分類效果，公式「#(wrong cases) 除以 #(all cases)」
   4. binary:logistic： 羅吉斯回歸，model對每一筆預測資料輸出機率
+  5. binary:hinge: 二元分類中使用hinge loss作為loss function進行分類，model對每一筆預測資料輸出2元結果(1, 0)
 * threshold(閥值)選取方式
   1. 採用13個Feature，基於binary:logistic搭配不同threshold，產生三種評估指標。
   2. 已知資料集是不平衡(沒病：有病約10：1)，成功檢測出患者有病才是重要的。
